@@ -10,8 +10,8 @@
 #define reverse 2
 
 
-int j = 0;
-int y_input = 0;
+int   j = 0;
+int   y_input     = 0;
 
 void setup() {
 
@@ -39,25 +39,52 @@ void setup() {
 
 void loop() {
 
+      int   carSpeed    = 0;
+      int   carRotation = 0;
+      float turnWeight  = 0.85;
+      int  carWheels[4] = {0,0,0,0};
+      
 
-  for(int i =-100;i<=100;i++){
-    j = 0;
- //   Serial.print("#");
- //   Serial.print(j);
-    y_input = analogRead(Y_CTRL);
- //   Serial.print(" Y:");
- //   Serial.print(y_input);
- //   Serial.print(" ");
-    j = Y_translate( y_input);
-    MoveMotors(j,j,j,j);
-    
-   // delay(800);
-  }
+      int fl = 0;
+      int bl = 0;
+      int br = 0;
+      int fr = 0;
+
+/*
+     Serial.print  ( analogRead(X_CTRL) );
+     Serial.print (" ");
+     Serial.print  ( analogRead(Y_CTRL) );
+     Serial.print( " " );
+     Serial.println( analogRead(Z_CTRL) );
+*/
+
+
+
+      while(1){
+       carSpeed    = Y_translate( analogRead(Y_CTRL) ); //Returns -100 to 100 for speed percentage. Reverse to Forward, respectfully.
+       carRotation = X_translate( analogRead(X_CTRL) ); //Returns -100 to 100 for Car Rotation. Left, to Right, respectfully.
+       carRotation *= turnWeight;// Adjusts roation by pre-definded weight.
+
+       tankControl(carSpeed, carRotation,carWheels);
+    //   tankControl(80, 50,carWheels);
+
+       fl = carWheels[0];
+       bl = carWheels[1];
+       br = carWheels[2];
+       fr = carWheels[3];
+/*
+       Serial.print(fl);
+       Serial.print(" ");
+       Serial.print(bl);
+       Serial.print(" ");
+       Serial.print(br);
+       Serial.print(" ");       
+       Serial.println(fr);
+*/
+       MoveMotors(fl,bl,br,fr);
+      }
 
   
-  //110 - 183 for reverse. Higher is slower 
-  //190 - 255 for forward. Higher is faster
-
 }
 
 void MoveMotors (int fl_percent, int bl_percent, 
@@ -121,6 +148,35 @@ void MoveMotors (int fl_percent, int bl_percent,
   
 }
 
+
+
+int X_translate(int x_value){
+//147 MAX RIGHT
+
+//492 - 560 CENTER
+
+//901 MIN LEFT
+
+
+if (x_value >= 601){
+ x_value -= 601;
+ x_value /= 3;  
+}
+else if (x_value <= 447){
+ x_value -= 147; 
+ x_value -= 300;
+ x_value /= 3;
+}
+else
+ x_value = 0;
+
+ x_value *= -1;
+
+return x_value;
+  
+}
+
+
 int Y_translate(int y_value){
 //842 MAX
 
@@ -144,4 +200,106 @@ else
 return y_value;
   
 }
+
+int Z_translate(int z_value){
+// MAX
+
+// -  CENTER
+
+// MIN
+
+
+if (z_value >= 542){
+ z_value -= 542;
+ z_value /= 3;  
+}
+else if (z_value < 429){
+ z_value -= 129; 
+ z_value -= 300;
+ z_value /= 3;
+}
+else
+ z_value = 0;
+
+return z_value;
+  
+}
+
+
+int *tankControl(int carSpeed, int carRotation, int *carWheels){
+
+//variables for left, and right wheels.
+int leftWheels  = 0;
+int rightWheels = 0;
+
+//int carWheels[4] = {0,0,0,0};
+
+  //sanity check. If more than 100%, or less than -100%, fix.
+  if (carSpeed < -100)
+   carSpeed = -100;
+  else if (carSpeed > 100)
+   carSpeed = 100; 
+
+  if (carRotation < -100)
+   carRotation = -100;
+  else if (carRotation > 100)
+   carRotation = 100;
+
+  //car is not moving 
+  if (carSpeed == 0){
+   leftWheels = 0;
+   rightWheels = 0;
+   }
+
+  //car is not rotating
+  else if (carRotation == 0){
+   //all wheels move forward at speed of vehicle  
+   leftWheels = carSpeed;
+   rightWheels = carSpeed;
+   }
+
+  //Moving Forward 
+  else if (carSpeed > 0){
+
+   //vehicle is turning right
+   if(carRotation > 0){
+    leftWheels = carSpeed; //left wheels go full speed
+    rightWheels = carSpeed * ( (100 - carRotation) / 100.0); //rightWheel goes carRotation of a percent slower than left 
+    }
+
+   //vehicle is turning left
+   else if (carRotation < 0){
+    rightWheels = carSpeed; //right wheels go full speed
+    leftWheels = carSpeed * ( (100 - (carRotation * -1)  ) / 100.0); //leftWheels goes carRotation of a percent slower than right 
+    }
+  }
+
+  //Moving Backwards 
+  else if (carSpeed < 0){
+
+   //carRotation is right; vehicle is moving left in reverse
+   if(carRotation > 0){
+    rightWheels = carSpeed; //right wheels go full speed
+    leftWheels  = carSpeed * ( (100 - carRotation) / 100.0); //leftWheel goes carRotation of a percent slower than right
+    }
+
+    //vehicle is turning left; vehicle is moving right in reverse
+    else if (carRotation < 0){
+     leftWheels = carSpeed; //left wheels go full speed
+     rightWheels = carSpeed * ( (100 - (carRotation * -1)  ) / 100.0); //rightWheels goes carRotation of a percent slower than left 
+     }
+   }
+
+   carWheels[0] = leftWheels;
+   carWheels[1] = leftWheels;
+   carWheels[2] = rightWheels;
+   carWheels[3] = rightWheels;   
+
+   return carWheels;
+  
+}
+
+
+
+
 
