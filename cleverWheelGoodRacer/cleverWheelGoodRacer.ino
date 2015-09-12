@@ -3,11 +3,19 @@
 #define back_right 11
 #define front_right 9
 
-#define X_CTRL A0
-#define Y_CTRL A2
-#define Z_CTRL A1
+#define X_CTRL A1
+#define Y_CTRL A0
+#define Z_CTRL A2
+
+#define JOY_CONNECTED A5
 
 #define reverse 2
+
+//Fuck you, Shane
+//Fuck you, Shane
+//Fuck you, Shane
+//Fuck you, Shane
+//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane//Fuck you, Shane
 
 
 int   j = 0;
@@ -25,15 +33,23 @@ void setup() {
   pinMode(X_CTRL,INPUT);
   pinMode(Y_CTRL,INPUT);
   pinMode(Z_CTRL,INPUT);    
-  // put your setup code here, to run once:
+
+  pinMode(JOY_CONNECTED, INPUT);
+  digitalWrite(JOY_CONNECTED, HIGH); //enable pullup
 
   analogWrite(front_left, 0 );
   analogWrite(front_right, 0 );
   analogWrite(back_left, 0 );
   analogWrite(back_right, 0 );
 
-  delay(1000);
- // Serial.println("Test");
+  delay(3000);
+
+  if ( digitalRead(JOY_CONNECTED) == HIGH ) //if joystick is connected, this pin will be pulled low.
+  {
+   Serial.println("No Joystick. Halting execution.");
+   while(1); //if it is high, halt execution until reset.
+  }
+ 
 }
 
 
@@ -50,21 +66,16 @@ void loop() {
       int br = 0;
       int fr = 0;
 
-/*
-     Serial.print  ( analogRead(X_CTRL) );
-     Serial.print (" ");
-     Serial.print  ( analogRead(Y_CTRL) );
-     Serial.print( " " );
-     Serial.println( analogRead(Z_CTRL) );
-*/
-
-
-
       while(1){
        carSpeed    = Y_translate( analogRead(Y_CTRL) ); //Returns -100 to 100 for speed percentage. Reverse to Forward, respectfully.
-       carRotation = X_translate( analogRead(X_CTRL) ); //Returns -100 to 100 for Car Rotation. Left, to Right, respectfully.
-       carRotation *= turnWeight;// Adjusts roation by pre-definded weight.
 
+       if (carSpeed < 5 && carSpeed > -5)
+        carSpeed = 0;
+
+       
+       carRotation = Z_translate( analogRead(Z_CTRL) ); //Returns -100 to 100 for Car Rotation. Left, to Right, respectfully.
+       carRotation *= turnWeight;// Adjusts roation by pre-definded weight.
+       
        tankControl(carSpeed, carRotation,carWheels);
     //   tankControl(80, 50,carWheels);
 
@@ -72,6 +83,26 @@ void loop() {
        bl = carWheels[1];
        br = carWheels[2];
        fr = carWheels[3];
+
+
+     Serial.print("X: ");
+     Serial.print( analogRead(X_CTRL) );
+     Serial.print(" Y: ");
+     Serial.print( analogRead(Y_CTRL) );
+     Serial.print(" Z: ");
+     Serial.print( analogRead(Z_CTRL) );
+     Serial.print(" - ");
+     Serial.print(fl);
+     Serial.print(" ");
+     Serial.print(bl);
+     Serial.print(" ");
+     Serial.print(br);
+     Serial.print(" ");
+     Serial.println(fr);
+     
+
+
+       
 /*
        Serial.print(fl);
        Serial.print(" ");
@@ -202,24 +233,26 @@ return y_value;
 }
 
 int Z_translate(int z_value){
-// MAX
+//820 MAX - LEFT
 
-// -  CENTER
+//490 - CENTER
 
-// MIN
+//146 MIN - RIGHT
 
 
-if (z_value >= 542){
- z_value -= 542;
+if (z_value >= 520){
+ z_value -= 520;
  z_value /= 3;  
 }
-else if (z_value < 429){
- z_value -= 129; 
+else if (z_value < 446){
+ z_value -= 146; 
  z_value -= 300;
  z_value /= 3;
 }
 else
  z_value = 0;
+
+ z_value *= -1;
 
 return z_value;
   
@@ -258,8 +291,8 @@ int rightWheels = 0;
    rightWheels = carSpeed;
    }
 
-  //Moving Forward 
-  else if (carSpeed > 0){
+  //Moving Forward, or backwards
+  else if (carSpeed > 0 || carSpeed < 0){
 
    //vehicle is turning right
    if(carRotation > 0){
@@ -273,7 +306,8 @@ int rightWheels = 0;
     leftWheels = carSpeed * ( (100 - (carRotation * -1)  ) / 100.0); //leftWheels goes carRotation of a percent slower than right 
     }
   }
-
+  
+/*
   //Moving Backwards 
   else if (carSpeed < 0){
 
@@ -288,7 +322,7 @@ int rightWheels = 0;
      leftWheels = carSpeed; //left wheels go full speed
      rightWheels = carSpeed * ( (100 - (carRotation * -1)  ) / 100.0); //rightWheels goes carRotation of a percent slower than left 
      }
-   }
+   }*/
 
    carWheels[0] = leftWheels;
    carWheels[1] = leftWheels;
