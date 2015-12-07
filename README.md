@@ -1,12 +1,12 @@
 # cleverGirl
-Good Girl!! :3
 
+I met a girl with a mecanum wheel robot she made in highschool for a FIRST competition. She wished to turn said robot into a Power Wheels Racer.
 
-Shane is a good girl. He likes BCI, and motorcycles.
+This is the code that powered the Racer.
 
-My name is Ted, I haven't slept in a week.
+Video:
 
-I also have two cats. :3
+https://www.youtube.com/watch?v=HZxuFrH6i6Y
 
 
 
