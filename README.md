@@ -9,6 +9,8 @@ Video:
 https://www.youtube.com/watch?v=HZxuFrH6i6Y
 
 
+http://www.makerfaireorlando.com/exhibit/clever-girl-power-racer/
+
 
                                                         .--.__
                                                       .~ (@)  ~~~---_
